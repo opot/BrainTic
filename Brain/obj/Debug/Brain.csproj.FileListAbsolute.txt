@@ -1,0 +1,1 @@
+c:\users\grigory\documents\visual studio 2015\Projects\Brain\Brain\bin\Debug\Brain.exe.config
