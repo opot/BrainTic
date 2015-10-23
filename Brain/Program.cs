@@ -39,11 +39,23 @@ namespace Brain {
 			cells[9][5] = CellState.Block;
 
 			string[] turns = Directory.GetFiles(folder);		
-			for(int i = 0; i < turns.Length; i++) {
-				StringReader sr = new StringReader(turns[i]);
-				addSymb(turns[i][0] == 'x' ? CellState.Cross : CellState.Zero, Convert.ToInt32(sr.ReadLine()));
+			for(int i = 0; i < turns.Length/2; i++) {
+				String s = File.ReadAllLines(turns[i + turns.Length / 2])[0];
+				//Console.Write(turns[i + turns.Length/2].Split('/')[1] + " ");
+				addSymb(turns[i + turns.Length/2].Split('/')[1][0] == 'x' ? CellState.Cross : CellState.Zero, Convert.ToInt32(s));
+
+				s = File.ReadAllLines(turns[i])[0];
+				//Console.Write(turns[i].Split('/')[1] + " ");
+				addSymb(turns[i].Split('/')[1][0] == 'x' ? CellState.Cross : CellState.Zero, Convert.ToInt32(s));
 			}
 
+			if(turns.Length % 2 == 1) {
+				String s = File.ReadAllLines(turns[turns.Length - 1])[0];
+				//Console.Write(turns[i + turns.Length / 2].Split('/')[1] + " ");
+				addSymb(CellState.Cross, Convert.ToInt32(s));
+			}
+
+			Console.WriteLine(" ");
 			DebugOutput();
 
         }
@@ -55,25 +67,66 @@ namespace Brain {
 
 		private void addSymb(CellState player, int row) {
 			if (row != 4 && row != 5) {
-				for (int i = 8; i >= 0; i--)
-					cells[row][i + 1] = cells[row][i];
-				cells[row][0] = player;
+				for (int i = 1; i <= 9; i++)
+					cells[i - 1][row] = cells[i][row];
+				cells[9][row] = player;
 			} else {
-				for (int i = 8; i > 0; i--)
-					cells[row][i + 1] = cells[row][i];
-				cells[row][1] = player;
+				for (int i = 1; i <= 8; i++)
+					cells[i - 1][row] = cells[i][row];
+				cells[8][row] = player;
 			}
 
-			DebugOutput();
+		//	DebugOutput();
 
+		}
+
+		public bool check() {
+			for (int line = 0; line < 9; line++) {
+				for (int i = 0; i < 5; i++) {
+					if (cells[line][i] == CellState.Cross || cells[line][i] == CellState.Zero) {
+						bool isAll = true;
+						for (int j = i + 1; j < i + 5; j++)
+							if (cells[line][i] != cells[line][j])
+								isAll = false;
+						if (isAll)
+							return true;
+					}
+				}
+			}
+
+			for (int row = 0; row < 9; row++) {
+				for (int i = 0; i < 5; i++) {
+					if (cells[i][row] == CellState.Cross || cells[i][row] == CellState.Zero) {
+						bool isAll = true;
+						for (int j = i + 1; j < i + 5; j++)
+							if (cells[i][row] != cells[j][row])
+								isAll = false;
+						if (isAll)
+							return true;
+					}
+				}
+			}
+
+
+
+			return false;
 		}
 
 		public void DebugOutput() {
 			for (int i = 0; i < 10; i++) {
-				for (int j = 0; j < 10; j++)
-					Console.Write(cells[i][j] + " ");
+				for (int j = 0; j < 10; j++) {
+					if (cells[i][j] == CellState.Cross)
+						Console.Write("x");
+					if (cells[i][j] == CellState.Zero)
+						Console.Write("O");
+					if (cells[i][j] == CellState.Empty)
+						Console.Write("_");
+					if (cells[i][j] == CellState.Block)
+						Console.Write("=");
+				}
 				Console.WriteLine(" ");
 			}
+
 		}
 
 	}
