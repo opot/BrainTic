@@ -7,32 +7,37 @@ using System.Threading.Tasks;
 
 namespace Brain {
 	struct Field {
-		CellState[][] cells;
+		CellState[,] cells;
 
-		public Field(String folder) {
-			cells = new CellState[10][];
+		public Field(String folder,CellState player) {
+
+			cells = new CellState[10,10];
 			for (int i = 0; i < 10; i++) {
-				cells[i] = new CellState[10];
 				for (int j = 0; j < 10; j++)
-					cells[i][j] = CellState.Empty;
+					cells[i,j] = CellState.Empty;
 			}
-			cells[9][4] = CellState.Block;
-			cells[9][5] = CellState.Block;
+			cells[9,4] = CellState.Block;
+			cells[9,5] = CellState.Block;
 
-			string[] turns = Directory.GetFiles(folder);
-			for (int i = 0; i < turns.Length / 2; i++) {
-				String s = File.ReadAllLines(turns[i + turns.Length / 2])[0];
-				//Console.Write(turns[i + turns.Length/2].Split('/')[1] + " ");
-				addSymb(turns[i + turns.Length / 2].Split('/')[1][0] == 'x' ? CellState.Cross : CellState.Zero, Convert.ToInt32(s));
-
-				s = File.ReadAllLines(turns[i])[0];
-				//Console.Write(turns[i].Split('/')[1] + " ");
-				addSymb(turns[i].Split('/')[1][0] == 'x' ? CellState.Cross : CellState.Zero, Convert.ToInt32(s));
+			String[] xMoves;
+			String[] oMoves;
+			if (player == CellState.Cross) {
+				xMoves = Directory.GetFiles(folder);
+				oMoves = Directory.GetFiles(folder + "o");
+			} else {
+				oMoves = Directory.GetFiles(folder);
+				xMoves = Directory.GetFiles(folder + "x");
 			}
 
-			if (turns.Length % 2 == 1) {
-				String s = File.ReadAllLines(turns[turns.Length - 1])[0];
-				//Console.Write(turns[i + turns.Length / 2].Split('/')[1] + " ");
+			for(int i = 0; i < oMoves.Length; i++) {
+				String s = File.ReadAllLines(xMoves[i])[0];
+				addSymb(CellState.Cross, Convert.ToInt32(s));
+
+				s = File.ReadAllLines(oMoves[i])[0];
+				addSymb(CellState.Zero, Convert.ToInt32(s));
+			}
+			if(player == CellState.Zero) {
+				String s = File.ReadAllLines(xMoves[xMoves.Length-1])[0];
 				addSymb(CellState.Cross, Convert.ToInt32(s));
 			}
 
@@ -42,48 +47,55 @@ namespace Brain {
 		}
 
 		public Field(Field last, int row, CellState player) {
-			cells = last.cells;
+			cells = new CellState[10,10];
+			for (int i = 0; i < 10; i++)
+				for (int j = 0; j < 10; j++)
+					cells[i, j] = last.cells[i, j];
 			this.addSymb(player, row);
 		}
 
 		private void addSymb(CellState player, int row) {
 			if (row != 4 && row != 5) {
 				for (int i = 1; i <= 9; i++)
-					cells[i - 1][row] = cells[i][row];
-				cells[9][row] = player;
+					cells[i - 1, row] = cells[i, row];
+				cells[9, row] = player;
 			} else {
 				for (int i = 1; i <= 8; i++)
-					cells[i - 1][row] = cells[i][row];
-				cells[8][row] = player;
+					cells[i - 1, row] = cells[i, row];
+				cells[8, row] = player;
 			}
 
 			//	DebugOutput();
 
 		}
 
+		public bool checkRow(int row) {
+			return (cells[0, row] == CellState.Empty);
+		}
+
 		public CellState check() {
 			for (int line = 0; line < 9; line++) {
 				for (int i = 0; i < 5; i++) {
-					if (cells[line][i] == CellState.Cross || cells[line][i] == CellState.Zero) {
+					if (cells[line, i] == CellState.Cross || cells[line, i] == CellState.Zero) {
 						bool isAll = true;
 						for (int j = i + 1; j < i + 5; j++)
-							if (cells[line][i] != cells[line][j])
+							if (cells[line, i] != cells[line, j])
 								isAll = false;
 						if (isAll)
-							return cells[line][i];
+							return cells[line, i];
 					}
 				}
 			}
 
 			for (int row = 0; row < 9; row++) {
 				for (int i = 0; i < 5; i++) {
-					if (cells[i][row] == CellState.Cross || cells[i][row] == CellState.Zero) {
+					if (cells[i, row] == CellState.Cross || cells[i, row] == CellState.Zero) {
 						bool isAll = true;
 						for (int j = i + 1; j < i + 5; j++)
-							if (cells[i][row] != cells[j][row])
+							if (cells[i, row] != cells[j, row])
 								isAll = false;
 						if (isAll)
-							return cells[row][i];
+							return cells[row, i];
 					}
 				}
 			}
@@ -101,16 +113,16 @@ namespace Brain {
 		public void DebugOutput() {
 			for (int i = 0; i < 10; i++) {
 				for (int j = 0; j < 10; j++) {
-					if (cells[i][j] == CellState.Cross)
+					if (cells[i, j] == CellState.Cross)
 						Console.Write("x");
-					if (cells[i][j] == CellState.Zero)
+					if (cells[i, j] == CellState.Zero)
 						Console.Write("O");
-					if (cells[i][j] == CellState.Empty)
+					if (cells[i, j] == CellState.Empty)
 						Console.Write("_");
-					if (cells[i][j] == CellState.Block)
+					if (cells[i, j] == CellState.Block)
 						Console.Write("=");
 				}
-				Console.WriteLine(" ");
+				Console.WriteLine();
 			}
 
 		}
