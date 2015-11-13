@@ -22,18 +22,16 @@ namespace Brain {
 			this.loses = loses;
 		}
 
-		public int CompareTo(SolveResult a) {
-			if (wins > a.wins)
-				return 1;
-			if (wins < a.wins)
-				return -1;
-
-			if (loses < a.loses)
-				return 1;
+		public bool CompareTo(SolveResult a) {
 			if (loses > a.loses)
-				return -1;
+				return true;
+			if (loses < a.loses)
+				return false;
 
-			return 0;
+			if (wins < a.wins)
+				return true;
+
+			return false;
 		}
 	}
 
@@ -41,52 +39,53 @@ namespace Brain {
 
 		public Program(string fold, CellState player) {
 
-			DateTime start = System.DateTime.Now;
-
 			Field field = new Field(fold, player);
-			SolveResult res = makeTurn(invertCell(player), 4 , field,0);
+
+			List<SolveResult> result = new List<SolveResult>(10);
+
+			for (int i = 0; i < 10; i++) {
+				if (field.checkRow(i)) {
+					SolveResult cur = makeTurn(invertCell(player), 4, new Field(field, i, player), i);
+					result.Add(cur);
+				}
+			}
+
+			SolveResult min = result[0];
+			for (int i = 1; i < result.Count; i++)
+				if (min.CompareTo(result[i]))
+					min = result[i];
 
 			int turn = Directory.GetFiles(fold).Length + 1;
 			string path = fold + (player == CellState.Cross ? "x" : "o") + turn.ToString() + ".txt";
-			Console.WriteLine(path + " " + res.row.ToString());
-			Console.WriteLine(analized);
-
-			DateTime stop = System.DateTime.Now;
-			File.WriteAllLines(path, new String[] { res.row.ToString(), (stop.Millisecond - start.Millisecond).ToString()});
+			File.WriteAllLines(path, new String[] { min.row.ToString() });
 		}
 
-		int analized = 0;
 		private SolveResult makeTurn(CellState player, int deep, Field field, int lastRow) {
-			//analized++;
 			CellState field_state = field.check();
 
-			if (field_state != CellState.Empty) {
-				analized++;
+			if (field_state != CellState.Empty)
 				return new SolveResult(lastRow, field_state == player ? 1 : 0, field_state == player ? 0 : 1);
-			}
+
 			if (deep == 0)
 				return new SolveResult(lastRow, 0, 0);
 
-			List<SolveResult> result = new List<SolveResult>();
-			SolveResult thisResult = new SolveResult(0,0,0);
-			thisResult = new SolveResult(lastRow, 0, 0);
+			List<SolveResult> result = new List<SolveResult>(10);
+			SolveResult thisResult = new SolveResult(lastRow, 0, 0);
 
 			for (int i = 0; i < 10; i++) {
-				//analized++;
 				if (field.checkRow(i)) {
-					//Console.Write(i);
-					result.Add(makeTurn(invertCell(player), deep - 1, new Field(field, i, player), i));
-					thisResult.wins += result[result.Count - 1].loses;
-					thisResult.loses += result[result.Count - 1].wins;
+					SolveResult cur = makeTurn(invertCell(player), deep - 1, new Field(field, i, player), i);
+					thisResult.wins += cur.loses;
+					thisResult.loses += cur.wins;
+					result.Add(cur);
 				}
 			}
-			//Console.WriteLine();
 
-			SolveResult max = result[0];
+			SolveResult min = result[0];
 			for (int i = 1; i < result.Count; i++)
-				if (result[i].CompareTo(max) == -1)
-					max = result[i];
-			thisResult.row = max.row;
+				if (min.CompareTo(result[i]))
+					min = result[i];
+			//thisResult.row = min.row;
 			return thisResult;
 		}
 
@@ -95,7 +94,7 @@ namespace Brain {
         }
 
 		static void Main(string[] args) {
-			new Program(args[0], args[1][0] == 'x'?CellState.Cross: CellState.Zero);
+			new Program(args[0], args[2][0] == 'x'?CellState.Cross: CellState.Zero);
 			//Console.ReadKey();
 		}
 	}
