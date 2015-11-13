@@ -4,3 +4,6 @@ C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\obj\
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\bin\Debug\Brain.exe
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\bin\Debug\Brain.pdb
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\obj\Debug\Brain.csprojResolveAssemblyReference.cache
+C:\Users\Grigory\Documents\Brain\Brain.exe.config
+C:\Users\Grigory\Documents\Brain\Brain.exe
+C:\Users\Grigory\Documents\Brain\Brain.pdb

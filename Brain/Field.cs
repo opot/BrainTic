@@ -41,8 +41,8 @@ namespace Brain {
 				addSymb(CellState.Cross, Convert.ToInt32(s));
 			}
 
-			Console.WriteLine(" ");
-			DebugOutput();
+			//Console.WriteLine(" ");
+			//DebugOutput();
 
 		}
 
@@ -74,30 +74,46 @@ namespace Brain {
 		}
 
 		public CellState check() {
-			for (int line = 0; line < 9; line++) {
-				for (int i = 0; i < 5; i++) {
-					if (cells[line, i] == CellState.Cross || cells[line, i] == CellState.Zero) {
-						bool isAll = true;
-						for (int j = i + 1; j < i + 5; j++)
-							if (cells[line, i] != cells[line, j])
-								isAll = false;
-						if (isAll)
-							return cells[line, i];
+			for (int line = 0; line < 10; line++) {
+				int max_streak = 0;
+				int streak = 1;
+				CellState max = CellState.Empty, cur = cells[0, line];
+
+				for (int i = 1; i < 10; i++)
+					if (cells[i, line] == cur) {
+						streak++;
+					} else {
+						if (streak > max_streak || max == CellState.Empty) {
+							max_streak = streak;
+							max = cur;
+							cur = cells[i, line];
+							streak = 1;
+						}
 					}
-				}
+				if (streak >= 5 && max != CellState.Empty)
+					return max;
+
 			}
 
 			for (int row = 0; row < 9; row++) {
-				for (int i = 0; i < 5; i++) {
-					if (cells[i, row] == CellState.Cross || cells[i, row] == CellState.Zero) {
-						bool isAll = true;
-						for (int j = i + 1; j < i + 5; j++)
-							if (cells[i, row] != cells[j, row])
-								isAll = false;
-						if (isAll)
-							return cells[row, i];
+				int max_streak = 0;
+				int streak = 1;
+				CellState max = CellState.Empty, cur = cells[row, 0];
+
+				for (int i = 1; i < 10; i++)
+					if (cells[row, i] == cur) {
+						streak++;
+					} else {
+						if (streak > max_streak || max == CellState.Empty) {
+							max_streak = streak;
+							max = cur;
+							cur = cells[row, i];
+							streak = 1;
+						}
 					}
-				}
+				if (streak >= 5 && max != CellState.Empty)
+					return max;
+
 			}
 
 			/*for (int diag = 0; diag <= 4; diag++) {
@@ -106,7 +122,7 @@ namespace Brain {
 				for (int row = 0; row + diag < 10; row++) {
 				}
 			}*/
-			
+
 			return CellState.Empty;
 		}
 
