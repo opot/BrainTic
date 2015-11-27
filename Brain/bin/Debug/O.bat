@@ -1,1 +1,1 @@
-Brain "test_game" o
+Brain games1/ o 5000

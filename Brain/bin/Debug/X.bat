@@ -1,1 +1,1 @@
-Brain "test_game" x
+Brain games1/ X 5000

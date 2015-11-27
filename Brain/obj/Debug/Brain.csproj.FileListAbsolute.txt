@@ -8,3 +8,8 @@ C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\bin\
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\bin\Debug\Brain.pdb
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\obj\Debug\Brain.exe
 C:\Users\Grigory\Documents\Visual Studio 2015\Projects\Brain\BrainTic\Brain\obj\Debug\Brain.pdb
+C:\Users\Grigory\Documents\GitHub\BrainTic\Brain\bin\Debug\Brain.exe.config
+C:\Users\Grigory\Documents\GitHub\BrainTic\Brain\obj\Debug\Brain.exe
+C:\Users\Grigory\Documents\GitHub\BrainTic\Brain\obj\Debug\Brain.pdb
+C:\Users\Grigory\Documents\GitHub\BrainTic\Brain\bin\Debug\Brain.exe
+C:\Users\Grigory\Documents\GitHub\BrainTic\Brain\bin\Debug\Brain.pdb

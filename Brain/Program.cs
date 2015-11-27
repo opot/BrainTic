@@ -2,7 +2,6 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using Solvation = Brain.Field.Solvation;
 
 namespace Brain {
 
@@ -12,9 +11,10 @@ namespace Brain {
 
 	sealed class Program {
 
-		DateTime start = DateTime.Now;
+		DateTime start;
 		CellState player;
 		int time;
+		string path;
 
 		int calcField = 1;
 		int nextCycleLength = 0;
@@ -26,46 +26,68 @@ namespace Brain {
 		public Program(string fold, CellState player, int time) {
 			this.player = player;
 			this.time = time;
+			this.path = fold;
 
 			Field field = new Field(fold);
-			Solve(new Solvation(field, player));
+
+			start = DateTime.Now;
+			Solve(new Solvation(field, Solvation.invertCell(player)));
 			que.CopyTo(branch, 0);
 
-			while (isinTime())
+			curCycleLength = nextCycleLength;
+			nextCycleLength = 0;
+			while (isinTime()) {
 				for (int i = 0; i < curCycleLength; i++)
 					Solve(que.Dequeue());
 
+				calcField += curCycleLength;
+				curCycleLength = nextCycleLength;
+				nextCycleLength = 0;
+			}
+
+
 			Solvation max = branch[0];
-			for (int i = 1; i < 10; i++)
-				max = branch[i].isGreater(max);
 
+			try {
+				for (int i = 1; i < 10; i++)
+					if (branch[i] != null)
+						max = branch[i].isGreater(max);
 
-			int turn = Directory.GetFiles(fold).Length + 1;
-			string path = fold + (player == CellState.Cross ? "x" : "o") + turn.ToString() + ".txt";
+			int turn = Directory.GetFiles(fold).Length/2 + 1;
+			string path = fold + (player == CellState.Cross ? "X" : "O") + turn.ToString() + ".txt";
 			File.WriteAllLines(path, new String[] { max.getTurn() });
+			} catch (NullReferenceException e) {
+				String[] s = new String[10];
+				for (int i = 0; i < 10; i++)
+					s[i] = branch[i] == null ? "null" : branch[i].getTurn();
+				File.WriteAllLines(fold + (player == CellState.Cross ? "X" : "O") + (Directory.GetFiles(fold).Length / 2 + 1).ToString() + ".txt", s);
+				return;
+			}
 		}
 
 		void Solve(Solvation solve) {
 			for(int i = 0; i < 10; i++) {
-				Solvation buf = new Solvation(solve, i);
+				Solvation buf = new Solvation(solve, (i+5)%10);
 				if (!buf.isFinalized) {
 					que.Enqueue(buf);
 					nextCycleLength++;
-					calcField++;
 				}
 			}
 		}
 
 		bool isinTime() {
-			int d = (DateTime.Now.Second - start.Second) * 1000 + (DateTime.Now.Millisecond - start.Millisecond);
-			float needtime = (d / (float)calcField)*nextCycleLength*1.1f + 100;
-			Console.WriteLine(d);
+			TimeSpan final = DateTime.Now - start;
+			double d = final.TotalMilliseconds;
+			double needtime = d*(1 + 1.1 / calcField*curCycleLength);
 			return needtime <= time;
 		}
 
 		static void Main(string[] args) {
-			new Program(args[0], args[2][0] == 'x'?CellState.Cross: CellState.Zero, Convert.ToInt32(args[2]));
-			Console.ReadKey();
+			new Program(args[0], args[1][0] == 'X'?CellState.Cross: CellState.Zero, Convert.ToInt32(args[2]));
+			//for (int i = 0; i < args.Length; i++)
+				//Console.WriteLine(args[i]);
+			//File.WriteAllLines(args[0]+"out.txt", args);
+			//Console.ReadKey();
 		}
 	}
 
