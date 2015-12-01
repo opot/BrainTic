@@ -29,8 +29,15 @@ namespace Brain {
 
 			Field field = new Field(fold);
 
-			Solve(new Solvation(field, Solvation.invertCell(player)));
-			que.CopyTo(branch, 0);
+			Solvation root = new Solvation(field, Solvation.invertCell(player));
+			for (int i = 0; i < 10; i++) {
+				Solvation buf = new Solvation(root, (i + 5) % 10);
+				calcField++;
+				if (!buf.isFinalized)
+					que.Enqueue(buf);
+				if (buf.isMove)
+					branch[i] = buf;
+			}
 
 			while ((DateTime.Now - start).TotalMilliseconds + 500 < time && que.Count != 0)
 				for (int i = 0; i < 1000 && que.Count != 0; i++)
