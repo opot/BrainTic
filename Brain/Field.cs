@@ -18,18 +18,17 @@ namespace Brain {
 			cells[4][9] = CellState.Block;
 			cells[5][9] = CellState.Block;
 
-			String[] moves = Directory.GetFiles(folder);
+			int turns = Directory.GetFiles(folder).Length;
 
-			int offset = moves.Length / 2;
-			for(int i = 0; i < offset; i++) {
-				String s = File.ReadAllLines(moves[offset + i])[0];
+			for(int i = 1; i <= turns/2; i++) {
+				String s = File.ReadAllLines(folder+"X"+i+".txt")[0];
 				addSymb(CellState.Cross, Convert.ToInt32(s));
 				
-				s = File.ReadAllLines(moves[i])[0];
+				s = File.ReadAllLines(folder + "O" + i + ".txt")[0];
 				addSymb(CellState.Zero, Convert.ToInt32(s));
 			}
-			if(moves.Length % 2 == 1) {
-				String s = File.ReadAllLines(moves[moves.Length-1])[0];
+			if(turns % 2 == 1) {
+				String s = File.ReadAllLines(folder+"X"+(turns/2+1)+".txt")[0];
 				addSymb(CellState.Cross, Convert.ToInt32(s));
 			}
 		}
@@ -39,7 +38,16 @@ namespace Brain {
 			for (int i = 0; i < 10; i++)
 				cells[i] = last.cells[i];
 
-			addSymb(player, row);
+			cells[row] = new CellState[10];
+			int delta = 0;
+			if (row == 4 || row == 5) {
+				delta = 1;
+				cells[row][0] = CellState.Block;
+			}
+			cells[row][9-delta] = player;
+
+			for (int i = delta; i < 9; i++)
+				cells[row][i + 1] = last.cells[row][i];
 		}
 
 		public bool checkRow(int row) {

@@ -16,6 +16,7 @@ namespace Brain {
 		int time;
 		string path;
 
+		int depth = 0;
 		int calcField = 1;
 		int nextCycleLength = 0;
 		int curCycleLength = 1;
@@ -24,13 +25,13 @@ namespace Brain {
 		Solvation[] branch = new Solvation[10];
 
 		public Program(string fold, CellState player, int time) {
+			start = DateTime.Now;
 			this.player = player;
 			this.time = time;
 			this.path = fold;
 
 			Field field = new Field(fold);
 
-			start = DateTime.Now;
 			Solve(new Solvation(field, Solvation.invertCell(player)));
 			que.CopyTo(branch, 0);
 
@@ -43,6 +44,7 @@ namespace Brain {
 				calcField += curCycleLength;
 				curCycleLength = nextCycleLength;
 				nextCycleLength = 0;
+				depth++;
 			}
 
 
@@ -57,10 +59,12 @@ namespace Brain {
 			string path = fold + (player == CellState.Cross ? "X" : "O") + turn.ToString() + ".txt";
 			File.WriteAllLines(path, new String[] { max.getTurn() });
 			} catch (NullReferenceException e) {
-				String[] s = new String[10];
+				String[] s = new String[11];
 				for (int i = 0; i < 10; i++)
 					s[i] = branch[i] == null ? "null" : branch[i].getTurn();
-				File.WriteAllLines(fold + (player == CellState.Cross ? "X" : "O") + (Directory.GetFiles(fold).Length / 2 + 1).ToString() + ".txt", s);
+				s[10] = e.Message;
+				File.WriteAllLines(fold + (player == CellState.Cross ? "X" : "O") + 
+									(Directory.GetFiles(fold).Length / 2 + 1).ToString() + ".txt", s);
 				return;
 			}
 		}
@@ -76,10 +80,9 @@ namespace Brain {
 		}
 
 		bool isinTime() {
-			TimeSpan final = DateTime.Now - start;
-			double d = final.TotalMilliseconds;
-			double needtime = d*(1 + 1.1 / calcField*curCycleLength);
-			return needtime <= time;
+			double d = (DateTime.Now - start).TotalMilliseconds;
+			double needtime = d*(1 + 1.5 / calcField*curCycleLength) + 100;
+			return needtime < time;
 		}
 
 		static void Main(string[] args) {
