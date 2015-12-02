@@ -80,8 +80,20 @@ namespace Brain {
 					}
 				}
 			}
+			for (int line = 0; line < 9; line++) {
+				int sum = (int)cells[0][line] + (int)cells[1][line] + 
+						  (int)cells[2][line] + (int)cells[3][line] + 
+						  (int)cells[4][line];
+				if (sum == 5 || sum == -5)
+					return (CellState)(sum / 5);
+                for (int dx = 0; dx < 5; dx++) {
+					sum += (int)cells[dx + 5][line] - (int)cells[dx][line];
+					if (sum == 5 || sum == -5)
+						return (CellState)(sum / 5);
+				}
+			}
 
-			int delta = 0;
+					int delta = 0;
 			if(row == 4 || row == 5)
 				delta = 1;
 
@@ -91,14 +103,61 @@ namespace Brain {
 				cells[row][9 - delta] == cells[row][5 - delta])
 				return cells[row][8];
 
-			/*for (int diag = 0; diag <= 4; diag++) {
-				int max_streak = 0;
-				int streak = 0;
-				for (int row = 0; row + diag < 10; row++) {
+			for(int i = 0; i < 10 - delta; i++)
+				if(cells[row][i] != CellState.Empty) {
+					CellState buf = checkDiagFromIt(row, i);
+					if (buf != CellState.Empty)
+						return buf;
 				}
-			}*/
 			
 			return CellState.Empty;
+		}
+
+		private CellState checkDiagFromIt(int row, int line) {
+			int dx = row, dy = line;
+			while(dx != 0 && dy != 0) {
+				dx--;
+				dy--;
+			}
+
+			int sum = 0;
+			while(dx != 9 && dy != 9) {
+				sum += (int)cells[dx][dy];
+				dx++;
+				dy++;
+
+				if (min(dx, dy) >= 5)
+					sum -= (int)cells[dx - 5][dy - 5];
+
+				if (sum == 5 || sum == -5)
+					return (CellState)(sum / 5);
+			}
+
+			dx = row;
+			dy = line;
+			while (dx != 0 && dy != 9) {
+				dx--;
+				dy++;
+			}
+
+			sum = 0;
+			while (dx != 9 && dy != 0) {
+				sum += (int)cells[dx][dy];
+				dx++;
+				dy--;
+
+				if (min(dx, (9 - dy)) >= 5)
+					sum -= (int)cells[dx - 5][dy + 5];
+
+				if (sum == 5 || sum == -5)
+					return (CellState)(sum / 5);
+			}
+
+			return CellState.Empty;
+		}
+
+		private int min(int a, int b) {
+			return a < b ? a : b;
 		}
 
 		public void DebugOutput() {

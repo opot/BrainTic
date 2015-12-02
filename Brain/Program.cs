@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Brain {
 
-	public enum CellState {
-		Empty, Cross, Zero, Block
+	public enum CellState : int {
+		Empty = 0, Cross = 1, Zero = -1, Block = 0
 	}
 
 	sealed class Program {
@@ -29,9 +29,11 @@ namespace Brain {
 
 			Field field = new Field(fold);
 
+			int delta = (new Random()).Next(10);
+
 			Solvation root = new Solvation(field, Solvation.invertCell(player));
 			for (int i = 0; i < 10; i++) {
-				Solvation buf = new Solvation(root, (i + 5) % 10);
+				Solvation buf = new Solvation(root, (i + delta) % 10);
 				calcField++;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);

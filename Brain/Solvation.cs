@@ -65,7 +65,7 @@ namespace Brain {
 		}
 
 		public static CellState invertCell(CellState player) {
-			return (player == CellState.Cross) ? CellState.Zero : CellState.Cross;
+			return (CellState)(-(int)player);
 		}
 
 		public string getTurn() {
