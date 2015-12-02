@@ -14,26 +14,25 @@ namespace Brain {
 		DateTime start;
 		CellState player;
 		int time;
-		string path;
+		//string path;
 		int calcField = 1;
 
-		Queue<Solvation> que = new Queue<Solvation>();
+		Queue<Solution> que = new Queue<Solution>();
 
-		Solvation[] branch = new Solvation[10];
+		Solution[] branch = new Solution[10];
 
-		public Program(string fold, CellState player, int time) {
+		public Program(string fold, CellState player, int time){
 			start = DateTime.Now;
 			this.player = player;
 			this.time = time;
-			this.path = fold;
+			//this.path = fold;
 
 			Field field = new Field(fold);
-
 			int delta = (new Random()).Next(10);
 
-			Solvation root = new Solvation(field, Solvation.invertCell(player));
+			Solution root = new Solution(field, Solution.invertCell(player));
 			for (int i = 0; i < 10; i++) {
-				Solvation buf = new Solvation(root, (i + delta) % 10);
+				Solution buf = new Solution(root, (i + delta) % 10);
 				calcField++;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);
@@ -42,10 +41,9 @@ namespace Brain {
 			}
 
 			while ((DateTime.Now - start).TotalMilliseconds + 500 < time && que.Count != 0)
-				for (int i = 0; i < 1000 && que.Count != 0; i++)
-					Solve(que.Dequeue());
+				Solve(que.Dequeue());
 
-			Solvation max = branch[0];
+			Solution max = branch[0];
 
 				for (int i = 1; i < 10; i++)
 					if (branch[i] != null)
@@ -56,9 +54,9 @@ namespace Brain {
 			File.WriteAllLines(path, new String[] { max.getTurn() });
 		}
 
-		void Solve(Solvation solve) {
+		void Solve(Solution solve) {
 			for(int i = 0; i < 10; i++) {
-				Solvation buf = new Solvation(solve, (i+5)%10);
+				Solution buf = new Solution(solve, i);
 				calcField++;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);
@@ -66,7 +64,11 @@ namespace Brain {
 		}
 
 		static void Main(string[] args) {
-			new Program(args[0], args[1][0] == 'X'?CellState.Cross: CellState.Zero, Convert.ToInt32(args[2]));
+			try {
+				new Program(args[0], args[1][0] == 'X' ? CellState.Cross : CellState.Zero, Convert.ToInt32(args[2]));
+			} catch (Exception e) {
+				File.WriteAllLines(args[0] + "Exception.txt", new String[] { e.Message ,e.StackTrace });
+			}
 		}
 	}
 

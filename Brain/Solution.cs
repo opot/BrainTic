@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Brain {
-	public class Solvation {
+	public class Solution {
 		Field field;
-		Solvation last;
+		Solution last;
 
 		CellState player;
 
@@ -15,11 +15,11 @@ namespace Brain {
 
 		int wins = 0;
 		int loses = 0;
-
-		float mathWait = 0;
+		double mathWait = 0;
 
 		private bool canMove = true;
 		private bool Finaized = false;
+
 		public bool isMove {
 			get {
 				return canMove;
@@ -31,13 +31,13 @@ namespace Brain {
 			}
 		}
 
-		public Solvation(Field field, CellState player) {
+		public Solution(Field field, CellState player) {
 			this.field = field;
 			this.player = player;
 			last = null;
 		}
 
-		public Solvation(Solvation last, int row) {
+		public Solution(Solution last, int row) {
 			this.row = row;
 			this.player = invertCell(last.player);
 			if (!last.field.checkRow(row)) {
@@ -48,20 +48,23 @@ namespace Brain {
 
 			field = new Field(last.field, row, player);
 			this.last = last;
-			CellState res = field.check(row);
+			CellState res = field.CheckField(row, player);
 			if (res != CellState.Empty) {
 				wins += player == res ? 1 : 0;
 				loses += player == res ? 0 : 1;
 				Finaized = true;
-				mathWait = player == res ? 1 : -1;
+				mathWait = (player == res) ? 1 : -1;
 				last.toStart(loses, wins, mathWait);
 			}
 		}
 
-		void toStart(int wins, int loses, float mathWait) {
+		void toStart(int wins, int loses, double mathWait) {
 			this.wins += wins;
 			this.loses += loses;
-			this.mathWait -= mathWait * 0.1f;
+			this.mathWait -= mathWait;
+
+			if(last != null)
+				last.toStart(loses, wins, mathWait/100);
 		}
 
 		public static CellState invertCell(CellState player) {
@@ -72,7 +75,10 @@ namespace Brain {
 			return row.ToString();
 		}
 
-		public Solvation isGreater(Solvation other) {
+		public Solution isGreater(Solution other) {
+
+			if (other == null)
+				return this;
 
 			if (mathWait > other.mathWait)
 				return this;
@@ -84,12 +90,11 @@ namespace Brain {
 			if (wins < other.wins)
 				return other;
 
-			if (loses > other.loses)
-				return this;
 			if (loses < other.loses)
-				return other;
+				return this;
 
-			return this;
+			return other;
+
 		}
 
 	}

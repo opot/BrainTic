@@ -66,71 +66,67 @@ namespace Brain {
 			}
 		}
 
-		public CellState check(int row) {
+		public CellState CheckField(int row, CellState player) {
+			if (check(row, player))
+				return player;
 
-			for (int line = 0; line < 9; line++) {
-				for (int i = 0; i < 5; i++) {
-					if (cells[i][line] == CellState.Cross || cells[i][line] == CellState.Zero) {
-						bool isAll = true;
-						for (int j = i + 1; j < i + 5; j++)
-							if (cells[i][line] != cells[j][line])
-								isAll = false;
-						if (isAll)
-							return cells[i][line];
-					}
-				}
-			}
+			if (check(row, Solution.invertCell(player)))
+				return Solution.invertCell(player);
+
+			return CellState.Empty;
+		}
+
+		private bool check(int row, CellState player) {
+
 			for (int line = 0; line < 9; line++) {
 				int sum = (int)cells[0][line] + (int)cells[1][line] + 
 						  (int)cells[2][line] + (int)cells[3][line] + 
 						  (int)cells[4][line];
-				if (sum == 5 || sum == -5)
-					return (CellState)(sum / 5);
+				if (sum / 5 == (int)player)
+					return true;
                 for (int dx = 0; dx < 5; dx++) {
 					sum += (int)cells[dx + 5][line] - (int)cells[dx][line];
-					if (sum == 5 || sum == -5)
-						return (CellState)(sum / 5);
+					if (sum / 5 == (int)player)
+						return true;
 				}
 			}
 
-					int delta = 0;
+			int delta = 0;
 			if(row == 4 || row == 5)
 				delta = 1;
 
 			if (cells[row][9 - delta] == cells[row][8 - delta] &&
 				cells[row][9 - delta] == cells[row][7 - delta] &&
 				cells[row][9 - delta] == cells[row][6 - delta] &&
-				cells[row][9 - delta] == cells[row][5 - delta])
-				return cells[row][8];
+				cells[row][9 - delta] == cells[row][5 - delta] &&
+				cells[row][8] == player)
+				return true;
 
-			for(int i = 0; i < 10 - delta; i++)
-				if(cells[row][i] != CellState.Empty) {
-					CellState buf = checkDiagFromIt(row, i);
-					if (buf != CellState.Empty)
-						return buf;
-				}
-			
-			return CellState.Empty;
+			for(int i = 0; i < 10; i++)
+				if(cells[row][i] != CellState.Empty)
+					if (checkDiagFromIt(row, i, player))
+						return true;
+			return false;
 		}
 
-		private CellState checkDiagFromIt(int row, int line) {
+		private bool checkDiagFromIt(int row, int line, CellState player) {
 			int dx = row, dy = line;
 			while(dx != 0 && dy != 0) {
 				dx--;
 				dy--;
 			}
 
-			int sum = 0;
+			int sum = (int)cells[dx][dy];
 			while(dx != 9 && dy != 9) {
-				sum += (int)cells[dx][dy];
 				dx++;
 				dy++;
+				sum += (int)cells[dx][dy];
 
 				if (min(dx, dy) >= 5)
 					sum -= (int)cells[dx - 5][dy - 5];
 
-				if (sum == 5 || sum == -5)
-					return (CellState)(sum / 5);
+				if (sum / 5 == (int)player)
+					return true;
 			}
 
 			dx = row;
@@ -140,23 +136,23 @@ namespace Brain {
 				dy++;
 			}
 
-			sum = 0;
+			sum = (int)cells[dx][dy];
 			while (dx != 9 && dy != 0) {
-				sum += (int)cells[dx][dy];
 				dx++;
 				dy--;
+				sum += (int)cells[dx][dy];
 
 				if (min(dx, (9 - dy)) >= 5)
 					sum -= (int)cells[dx - 5][dy + 5];
 
-				if (sum == 5 || sum == -5)
-					return (CellState)(sum / 5);
+				if (sum / 5 == (int)player)
+					return true;
 			}
 
-			return CellState.Empty;
+			return false;
 		}
 
-		private int min(int a, int b) {
+		private static int min(int a, int b) {
 			return a < b ? a : b;
 		}
 
