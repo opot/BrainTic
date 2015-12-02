@@ -11,7 +11,7 @@ namespace Brain {
 
 		CellState player;
 
-		int row = 0;
+		int row;
 
 		int wins = 0;
 		int loses = 0;
@@ -23,6 +23,12 @@ namespace Brain {
 		public bool isFinalized {
 			get {
 				return Finaized;
+			}
+		}
+
+		public bool isMove {
+			get {
+				return canMove;
 			}
 		}
 
@@ -68,26 +74,22 @@ namespace Brain {
 		}
 
 		public Solvation isGreater(Solvation other) {
-			if (this.canMove && other.canMove) {
-				if (mathWait > other.mathWait)
-					return this;
-				if (mathWait < other.mathWait)
-					return other;
-
-				if (wins > other.wins)
-					return this;
-				if (wins < other.wins)
-					return other;
-
-				if (loses > other.loses)
-					return this;
-				if (loses < other.loses)
-					return other;
-
+			if (mathWait > other.mathWait)
 				return this;
-			} else {
-				return canMove ? this : other;
-			}
+			if (mathWait < other.mathWait)
+				return other;
+
+			if (wins > other.wins)
+				return this;
+			if (wins < other.wins)
+				return other;
+
+			if (loses > other.loses)
+				return this;
+			if (loses < other.loses)
+				return other;
+
+			return this;
 		}
 
 	}
