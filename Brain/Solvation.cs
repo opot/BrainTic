@@ -20,15 +20,14 @@ namespace Brain {
 
 		private bool canMove = true;
 		private bool Finaized = false;
-		public bool isFinalized {
-			get {
-				return Finaized;
-			}
-		}
-
 		public bool isMove {
 			get {
 				return canMove;
+			}
+		}
+		public bool isFinalized {
+			get {
+				return Finaized;
 			}
 		}
 
@@ -74,6 +73,7 @@ namespace Brain {
 		}
 
 		public Solvation isGreater(Solvation other) {
+
 			if (mathWait > other.mathWait)
 				return this;
 			if (mathWait < other.mathWait)
