@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Brain {
 
@@ -14,8 +13,6 @@ namespace Brain {
 	sealed class Program {
 
 		DateTime start;
-		CellState player;
-		int time;
 		int calcField = 1;
 
 		Queue<Solution> que = new Queue<Solution>();
@@ -24,8 +21,6 @@ namespace Brain {
 
 		public Program(string fold, CellState player, int time){
 			start = DateTime.Now;
-			this.player = player;
-			this.time = time;
 
 			Field field = new Field(fold);
 #if (DEBUG)
@@ -40,13 +35,12 @@ namespace Brain {
 			for (int i = 0; i < 10; i++) {
 				Solution buf = new Solution(root, (i + delta) % 10);
 				calcField++;
+				branch[i] = buf;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);
-				if (buf.isMove)
-					branch[i] = buf;
 			}
 
-			while ((DateTime.Now - start).TotalMilliseconds + 400 < time && que.Count != 0)
+			while ((DateTime.Now - start).TotalMilliseconds + 300 < time && que.Count != 0)
 				Solve(que.Dequeue());
 
 			Solution max = branch[0];
@@ -64,7 +58,7 @@ namespace Brain {
 			for(int i = 0; i < 10; i++) {
 				Solution buf = new Solution(solve, i);
 				calcField++;
-				if (!buf.isFinalized  && !solve.isFinalized)
+				if (!buf.isFinalized)
 					que.Enqueue(buf);
 			}
 		}
