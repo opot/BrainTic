@@ -13,6 +13,8 @@ namespace Brain {
 
 		int row;
 
+		int wins = 0;
+		int loses = 0;
 		double mathWait = 0;
 
 		private bool canMove = true;
@@ -48,20 +50,22 @@ namespace Brain {
 			this.last = last;
 			CellState res = field.CheckField(row, player);
 			if (res != CellState.Empty) {
+				wins += player == res ? 1 : 0;
+				loses += player == res ? 0 : 1;
 				Finalized = true;
 				mathWait = (player == res) ? 1 : -1;
-				last.toStart(mathWait);
-				if (res == player)
-					last.canMove = false;
+				last.toStart(loses, wins, mathWait/10.0);
 			}
 		}
 
-		void toStart(double mathWait) {
+		void toStart(int wins, int loses, double mathWait) {
 
+			this.wins += wins;
+			this.loses += loses;
 			this.mathWait -= mathWait;
 
 			if(last != null)
-				last.toStart(-mathWait/10.0);
+				last.toStart(loses, wins, -mathWait/100.0);
 		}
 
 		public static CellState invertCell(CellState player) {
@@ -76,11 +80,6 @@ namespace Brain {
 
 			if (other == null)
 				return this;
-
-			if (!other.canMove)
-				return this;
-			if (!this.canMove)
-				return other;
 
 			if (mathWait > other.mathWait)
 				return this;
