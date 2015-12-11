@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Brain {
+﻿namespace Brain {
 	public class Solution {
 		Field field;
 		Solution last;
 
 		CellState player;
-
 		int row;
-
 		double mathWait = 0;
 
 		private bool canMove = true;
@@ -50,18 +42,16 @@ namespace Brain {
 			if (res != CellState.Empty) {
 				Finalized = true;
 				mathWait = (player == res) ? 1 : -1;
-				last.toStart(mathWait);
+				last.toStart(mathWait/100.0);
 				if (res == player)
 					last.canMove = false;
 			}
 		}
 
 		void toStart(double mathWait) {
-
 			this.mathWait -= mathWait;
-
 			if(last != null)
-				last.toStart(-mathWait/10.0);
+				last.toStart(-mathWait/100.0);
 		}
 
 		public static CellState invertCell(CellState player) {

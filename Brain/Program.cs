@@ -1,6 +1,4 @@
-﻿#define DEBUG
-
-using System;
+﻿using System;
 using System.IO;
 using System.Collections.Generic;
 
@@ -13,8 +11,6 @@ namespace Brain {
 	sealed class Program {
 
 		DateTime start;
-		int calcField = 1;
-
 		Queue<Solution> que = new Queue<Solution>();
 
 		Solution[] branch = new Solution[10];
@@ -23,18 +19,11 @@ namespace Brain {
 			start = DateTime.Now;
 
 			Field field = new Field(fold);
-#if (DEBUG)
-			for (int i = 0; i < 10; i++)
-				if (field.CheckField(i, Solution.invertCell(player)) != 0)
-					throw new Exception("Player " + field.CheckField(i, Solution.invertCell(player)) + " already  won!");
-#endif
-
 			int delta = (new Random()).Next(10);
 
 			Solution root = new Solution(field, Solution.invertCell(player));
 			for (int i = 0; i < 10; i++) {
 				Solution buf = new Solution(root, (i + delta) % 10);
-				calcField++;
 				branch[i] = buf;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);
@@ -57,7 +46,6 @@ namespace Brain {
 		void Solve(Solution solve) {
 			for(int i = 0; i < 10; i++) {
 				Solution buf = new Solution(solve, i);
-				calcField++;
 				if (!buf.isFinalized)
 					que.Enqueue(buf);
 			}
