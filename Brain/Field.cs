@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Brain {
 	public class Field {
-		CellState[][] cells;
+		public CellState[][] cells;
 
 		public Field(String folder) {
 
