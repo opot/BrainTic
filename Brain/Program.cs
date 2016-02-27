@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Brain {
 
-	public enum CellState : int {
+	public enum CellState : short {
 		Empty = 0, Cross = 1, Zero = -1, Block = 0
 	}
 
@@ -13,13 +13,13 @@ namespace Brain {
 		DateTime start;
 		Queue<Solution> que = new Queue<Solution>();
 
-		Solution[] branch = new Solution[10];
+		Solution[] branch = new Solution[10];//stores possible move branch 
 
 		public Program(string fold, CellState player, int time){
 			start = DateTime.Now;
 
 			Field field = new Field(fold);
-			int delta = (new Random()).Next(10);
+			int delta = (new Random()).Next(10);//col shift, makes game more different
 
 			Solution root = new Solution(field, Solution.invertCell(player));
 			for (int i = 0; i < 10; i++) {
@@ -29,7 +29,7 @@ namespace Brain {
 					que.Enqueue(buf);
 			}
 
-			while ((DateTime.Now - start).TotalMilliseconds + 300 < time && que.Count != 0)
+			while ((DateTime.Now - start).TotalMilliseconds + 300 < time && que.Count != 0)//main cycle
 				Solve(que.Dequeue());
 
 			Solution max = branch[0];
@@ -55,7 +55,8 @@ namespace Brain {
 			try {
 				new Program(args[0], args[1][0] == 'X' ? CellState.Cross : CellState.Zero, Convert.ToInt32(args[2]));
 			} catch (Exception e) {
-				File.WriteAllLines(args[0] + "Exception.txt", new string[] { e.Message ,e.StackTrace });
+				File.WriteAllLines("Exception.txt", new string[] { e.Message ,e.StackTrace });
+				throw;
 			}
 		}
 	}

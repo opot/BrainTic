@@ -38,12 +38,12 @@
 
 			field = new Field(last.field, row, player);
 			this.last = last;
-			CellState res = field.CheckField(row, player);
-			if (res != CellState.Empty) {
+			CellState result = field.CheckField(row, player);
+			if (result != CellState.Empty) {
 				Finalized = true;
-				mathWait = (player == res) ? 1 : -1;
-				last.toStart(mathWait/100.0);
-				if (res == player)
+				mathWait = (player == result) ? 1 : -1;
+				last.toStart(mathWait/100.0);//notify root branches
+				if (result == player)
 					last.canMove = false;
 			}
 		}
