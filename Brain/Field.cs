@@ -1,4 +1,20 @@
-﻿using System;
+﻿/*
+ *************************************************************************
+ * AI for "Connect Five" game.                                   *
+ *                                                                       *
+ * This program should be used for Connect Five Competition.             *
+ * Connect Five is the game like Connect Four; for more information see  *
+ * http://www.math.spbu.ru/user/chernishev/connectfive/connectfive.html  *
+ *                                                                       *
+ * Author: Grigory Pervakov                                               *
+ * Email: pervakov.grigory@gmail.com                           *
+ * Year: 2015                                                            *
+ * See the LICENSE file in the project root for more information.        *
+ *************************************************************************
+*/
+
+
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,159 +22,194 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Brain {
+
+	/// <summary>
+	/// This class stores one state of the game field
+	/// and has some methods for manipulating it
+	/// </summary>
 	public class Field {
+
+		public static int SIZE = 10, WINLINE = 5;
+		public static int block1 = 4, block2 = 5;
+
 		public CellState[][] cells;
 
+		/// <summary>
+		/// Constructor that loads the game field from the list of files
+		/// </summary>
+		/// <param name="folder">Path to the game folder</param>
 		public Field(String folder) {
 
-			cells = new CellState[10][];
-			for (int i = 0; i < 10; i++)
-				cells[i] = new CellState[10];
-		
-			cells[4][9] = CellState.Block;
-			cells[5][9] = CellState.Block;
+			cells = new CellState[SIZE][];
+			for (int i = 0; i < SIZE; i++)
+				cells[i] = new CellState[SIZE];
+
+			cells[block1][SIZE - 1] = CellState.Block;
+			cells[block2][SIZE - 1] = CellState.Block;
 
 			int turns = Directory.GetFiles(folder).Length;
 
-			for(int i = 1; i <= turns/2; i++) {
-				String s = File.ReadAllLines(folder+"X"+i+".txt")[0];
+			for (int i = 1; i <= turns / 2; i++) {
+				String s = File.ReadAllLines(folder + "X" + i + ".txt")[0];
 				addSymb(CellState.Cross, Convert.ToInt32(s));
-				
+
 				s = File.ReadAllLines(folder + "O" + i + ".txt")[0];
 				addSymb(CellState.Zero, Convert.ToInt32(s));
 			}
-			if(turns % 2 == 1) {
-				String s = File.ReadAllLines(folder+"X"+(turns/2+1)+".txt")[0];
+			if (turns % 2 == 1) {
+				String s = File.ReadAllLines(folder + "X" + (turns / 2 + 1) + ".txt")[0];
 				addSymb(CellState.Cross, Convert.ToInt32(s));
 			}
 		}
 
-		public Field(Field last, int row, CellState player) {
-			cells = new CellState[10][];
-			for (int i = 0; i < 10; i++)
+		/// <summary>
+		/// Constructor that copies specified field and make move to specified column
+		/// </summary>
+		/// <param name="last">Field to copy</param>
+		/// <param name="col">Column to move</param>
+		/// <param name="player">Player who moves</param>
+		public Field(Field last, int col, CellState player) {
+			cells = new CellState[SIZE][];
+			for (int i = 0; i < SIZE; i++)
 				cells[i] = last.cells[i];
 
-			cells[row] = new CellState[10];
+			cells[col] = new CellState[SIZE];
 			int delta = 0;
-			if (row == 4 || row == 5) {
+			if (col == block1 || col == block2) {
 				delta = 1;
-				cells[row][9] = CellState.Block;
+				cells[col][SIZE - 1] = CellState.Block;
 			}
-			cells[row][9-delta] = player;
+			cells[col][SIZE - 1 - delta] = player;
 
-			for (int i = 0; i < 9 - delta; i++)
-				cells[row][i] = last.cells[row][i + 1];
+			for (int i = 0; i < SIZE - 1 - delta; i++)
+				cells[col][i] = last.cells[col][i + 1];
 		}
 
+		/// <summary>
+		/// Checks whether specified column is available to move
+		/// </summary>
 		public bool checkRow(int row) {
 			return (cells[row][0] == CellState.Empty);
 		}
 
+		/// <summary>
+		/// Performs the move to specified column
+		/// </summary>
 		private void addSymb(CellState player, int row) {
-			if (row != 4 && row != 5) {
-				for (int i = 1; i <= 9; i++)
+			if (row != block1 && row != block2) {
+				for (int i = 1; i < SIZE; i++)
 					cells[row][i - 1] = cells[row][i];
-				cells[row][9] = player;
+				cells[row][SIZE - 1] = player;
 			} else {
-				for (int i = 0; i < 8; i++)
+				for (int i = 0; i < SIZE - 2; i++)
 					cells[row][i] = cells[row][i + 1];
-				cells[row][8] = player;
+				cells[row][SIZE - 2] = player;
 			}
 		}
 
-		public CellState CheckField(int row, CellState player) {
-			if (check(row, player))
+		/// <summary>
+		/// Searching victory combinations
+		/// </summary>
+		/// <param name="col">Last changed column</param>
+		/// <param name="player">First player to check</param>
+		/// <returns>the result of checking</returns>
+		public CellState CheckField(int col, CellState player) {
+			if (check(col, player))
 				return player;
 
-			if (check(row, Solution.invertCell(player)))
+			if (check(col, Solution.invertCell(player)))
 				return Solution.invertCell(player);
 
 			return CellState.Empty;
 		}
 
-		private bool check(int row, CellState player) {
+		/// <summary>
+		/// checks specified player for victory combination
+		/// </summary>
+		private bool check(int col, CellState player) {
 
-			for (int line = 0; line < 9; line++) {
-				int sum = (int)cells[0][line] + (int)cells[1][line] + 
-						  (int)cells[2][line] + (int)cells[3][line] + 
-						  (int)cells[4][line];
-				if (sum / 5 == (int)player)
+			int sum = 0;
+
+			for (int line = 0; line < SIZE - 1; line++) {
+				sum = 0;
+				for (int i = 0; i < WINLINE; i++)
+					sum += (int)cells[i][line];
+				if (sum / WINLINE == (int)player)
 					return true;
-                for (int dx = 0; dx < 5; dx++) {
-					sum += (int)cells[dx + 5][line] - (int)cells[dx][line];
-					if (sum / 5 == (int)player)
+				for (int dx = 0; dx < SIZE - WINLINE; dx++) {
+					sum += (int)cells[dx + WINLINE][line] - (int)cells[dx][line];
+					if (sum / WINLINE == (int)player)
 						return true;
 				}
 			}
 
 			int delta = 0;
-			if(row == 4 || row == 5)
+			if (col == block1 || col == block2)
 				delta = 1;
 
-			if (cells[row][9 - delta] == cells[row][8 - delta] &&
-				cells[row][9 - delta] == cells[row][7 - delta] &&
-				cells[row][9 - delta] == cells[row][6 - delta] &&
-				cells[row][9 - delta] == cells[row][5 - delta] &&
-				cells[row][8] == player)
+			sum = 0;
+			for (int i = 0; i < WINLINE; i++)
+				sum += (int)cells[i + delta][col];
+			if (sum / WINLINE == (int)player)
 				return true;
 
-			for(int i = 0; i < 10; i++)
-				if(cells[row][i] != CellState.Empty)
-					if (checkDiagFromIt(row, i, player))
+			for (int i = 0; i < SIZE; i++)
+				if (cells[col][i] != CellState.Empty)
+					if (checkDiagFromIt(col, i, player))
 						return true;
 			return false;
 		}
 
-		private bool checkDiagFromIt(int row, int line, CellState player) {
-			int dx = row, dy = line;
-			while(dx != 0 && dy != 0) {
-				dx--;
-				dy--;
-			}
+		/// <summary>
+		/// checks victory combination on diagonals for specified player
+		/// </summary>
+		private bool checkDiagFromIt(int col, int row, CellState player) {
+			int dx = col - min(col, row);
+			int dy = row - min(col, row);
 
 			int sum = (int)cells[dx][dy];
-			while(dx != 9 && dy != 9) {
+			while (dx != SIZE - 1 && dy != SIZE - 1) {
 				dx++;
 				dy++;
 				sum += (int)cells[dx][dy];
 
-				if (min(dx, dy) >= 5)
-					sum -= (int)cells[dx - 5][dy - 5];
+				if (min(dx, dy) >= WINLINE)
+					sum -= (int)cells[dx - WINLINE][dy - WINLINE];
 
-				if (sum / 5 == (int)player)
+				if (sum / WINLINE == (int)player)
 					return true;
 			}
 
-			dx = row;
-			dy = line;
-			while (dx != 0 && dy != 9) {
-				dx--;
-				dy++;
-			}
+			dx = col - min(col, (SIZE - row - 1));
+			dy = row + min(col, (SIZE - row - 1));
 
 			sum = (int)cells[dx][dy];
-			while (dx != 9 && dy != 0) {
+			while (dx != SIZE - 1 && dy != 0) {
 				dx++;
 				dy--;
 				sum += (int)cells[dx][dy];
 
-				if (min(dx, (9 - dy)) >= 5)
-					sum -= (int)cells[dx - 5][dy + 5];
+				if (min(dx, (SIZE - 1 - dy)) >= WINLINE)
+					sum -= (int)cells[dx - WINLINE][dy + WINLINE];
 
-				if (sum / 5 == (int)player)
+				if (sum / WINLINE == (int)player)
 					return true;
 			}
 
 			return false;
 		}
 
+		/// <returns>minimal of two</returns>
 		private static int min(int a, int b) {
 			return a < b ? a : b;
 		}
 
+		/// <summary>
+		/// prints this field state in standart output
+		/// </summary>
 		public void DebugOutput() {
-			for (int i = 0; i < 10; i++) {
-				for (int j = 0; j < 10; j++) {
+			for (int i = 0; i < SIZE; i++) {
+				for (int j = 0; j < SIZE; j++) {
 					if (cells[j][i] == CellState.Cross)
 						Console.Write("x");
 					if (cells[j][i] == CellState.Zero)
